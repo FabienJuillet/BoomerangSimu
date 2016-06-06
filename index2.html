@@ -1,0 +1,80 @@
+<head>
+    <script type="text/javascript" src="js/ajax.js"></script>
+    
+    <script type="text/javascript">
+        var httpRequest = null;
+        
+        function SendRequest () {
+            if (!httpRequest) {
+                httpRequest = CreateHTTPRequestObject ();   // defined in ajax.js
+            }
+            if (httpRequest) {          
+                    // The requested file must be in the same domain that the page is served from.
+                var url = "EquerreSimple.xml";
+                httpRequest.open ("GET", url, true);    // async
+                httpRequest.onreadystatechange = OnStateChange;
+                httpRequest.send (null);
+            }
+        }
+
+        function OnStateChange () {
+            if (httpRequest.readyState == 0 || httpRequest.readyState == 4) {
+                if (IsRequestSuccessful (httpRequest)) {    // defined in ajax.js
+                    FillTable ();
+                }
+                else {
+                    alert ("Operation failed.");
+                }
+            }
+        }
+
+
+        function FillTable () {
+            var xmlDoc = ParseHTTPResponse (httpRequest);   // defined in ajax.js
+            if (!xmlDoc)
+                return;
+
+            var resTable = document.getElementById ("resTable");
+
+            var itemTags = xmlDoc.getElementsByTagName ("Element");
+            for (i = 0; i < itemTags.length; i++) {
+                resTable.insertRow (i);
+                    var recordNode = itemTags[i].getElementsByTagName ("Masse")[0];
+                    resTable.rows[i].insertCell (0);
+                    if ('textContent' in recordNode)
+                        resTable.rows[i].cells[0].innerHTML = recordNode.textContent;
+                    else
+                        resTable.rows[i].cells[0].innerHTML = recordNode.text;
+                    var recordNode = itemTags[i].getElementsByTagName ("Center")[0].getElementsByTagName ("X")[0];
+                    resTable.rows[i].insertCell (1);
+                    if ('textContent' in recordNode)
+                        resTable.rows[i].cells[1].innerHTML = recordNode.textContent;
+                    else
+                        resTable.rows[i].cells[1].innerHTML = recordNode.text;
+                    var recordNode = itemTags[i].getElementsByTagName ("Center")[0].getElementsByTagName ("Y")[0];
+                    resTable.rows[i].insertCell (2);
+                        resTable.rows[i].cells[2].innerHTML = recordNode.textContent;
+
+                    var text = itemTags[i].getElementsByTagName ("Center")[0].getElementsByTagName ("Z")[0].textContent;
+                    resTable.rows[i].insertCell (3);
+                        resTable.rows[i].cells[3].innerHTML = Number(text)+1.25;
+
+                
+            }
+        }
+    </script>
+</head>
+<body onload="SendRequest ()">
+    <table border="1px">
+        <thead style="font-weight: bold;">
+            <tr>
+                <td>Masse</td>
+                <td>Coord X </td>
+                <td>Coord Y</td>
+                <td>Coord Z</td>
+            </tr>
+        </thead>
+        <tbody id="resTable">
+        </tbody>
+    </table>
+</body>
